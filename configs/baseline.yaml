@@ -1,0 +1,33 @@
+# Eksperimen utama: U-Net + ResNet34 pralatih, segmentasi multilabel 4 kanal.
+# Setiap run menyalin file ini ke outputs/runs/<run_name>/config.yaml.
+
+run_name: unet_r34_512_long # unet_r34_512_baseline 
+seed: 42
+
+data:
+  ignore_giant_scab: false     # saklar eksperimen (lihat Knowledge Base bagian 10)
+  batch_size: 4
+  num_workers: 0               # 0 paling aman di Windows
+
+model:
+  encoder_name: resnet34
+  encoder_weights: imagenet
+
+loss:
+  bce_weight: 1.0
+  dice_weight: 1.0
+
+optimizer:
+  lr: 0.0001
+  weight_decay: 0.0001
+
+scheduler:                     # ReduceLROnPlateau, memantau val mIoU
+  factor: 0.5
+  patience: 3
+
+train:
+  max_epochs: 60 # 40
+  early_stopping_patience: 15   # berhenti jika val mIoU tidak membaik 8 epoch
+  amp: true                    # mixed precision, hemat memori GPU
+  accum_steps: 1               # naikkan ke 2 jika batch_size diturunkan ke 2
+  threshold: 0.5               # threshold sementara untuk val mIoU selama training
